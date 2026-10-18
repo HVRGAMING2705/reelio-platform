@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API = import.meta.env.VITE_API_URL || "";
+// Demo mode: when no backend URL is configured (e.g. this static Vercel
+// preview), the API is unreachable — the app degrades gracefully instead
+// of calling a dead endpoint.
+const DEMO_MODE = !import.meta.env.VITE_API_URL;
 
 async function api(path, options = {}) {
+  if (DEMO_MODE) throw new Error("Live data unavailable in demo");
   const res = await fetch(API + path, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -270,6 +275,22 @@ function Auth({ setUser }) {
   );
 }
 
+function DemoAuthNotice() {
+  return (
+    <main className="auth-page">
+      <div className="auth-box glass-panel">
+        <ReelioLogo />
+        <h2>Demo preview</h2>
+        <p>
+          Live data unavailable in demo — login and the workspace need the
+          Reelio backend, which isn't connected to this static preview.
+        </p>
+        <Link to="/" className="btn white-btn full">Back to home</Link>
+      </div>
+    </main>
+  );
+}
+
 function Dashboard({ user }) {
   const [portfolio, setPortfolio] = useState([]);
 
@@ -317,6 +338,10 @@ export default function App() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    if (DEMO_MODE) {
+      setChecking(false);
+      return;
+    }
     api("/auth/me")
       .then((res) => setUser(res.user))
       .catch(() => setUser(null))
@@ -356,7 +381,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Home user={user} />} />
-        <Route path="/auth" element={<Auth setUser={setUser} />} />
+        <Route path="/auth" element={DEMO_MODE ? <DemoAuthNotice /> : <Auth setUser={setUser} />} />
         <Route path="/dashboard" element={<Dashboard user={user} />} />
       </Routes>
     </div>

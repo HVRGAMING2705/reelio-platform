@@ -210,6 +210,10 @@ function Home({ user }) {
           <a href="mailto:reelio.team@gmail.com" className="btn white-btn">Contact Reelio</a>
         </div>
       </section>
+
+      <footer className="site-footer">
+        <p>© 2026 Reelio · <a href="/legal.html">Privacy · Terms</a></p>
+      </footer>
     </main>
   );
 }

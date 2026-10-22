@@ -46,7 +46,15 @@ func Load() (Config, error) {
 
 	cfg := Config{}
 	cfg.Env = getenv("APP_ENV", "development")
-	cfg.Addr = getenv("APP_ADDR", ":8080")
+	cfg.Addr = getenv("APP_ADDR", "")
+	if cfg.Addr == "" {
+		// Render (and most PaaS hosts) inject the port to bind via $PORT.
+		if p := strings.TrimSpace(os.Getenv("PORT")); p != "" {
+			cfg.Addr = ":" + p
+		} else {
+			cfg.Addr = ":8080"
+		}
+	}
 	cfg.PublicBaseURL = getenv("APP_PUBLIC_BASE_URL", "http://localhost:8080")
 	cfg.DBDSN = getenv("DB_DSN", "")
 	if cfg.DBDSN == "" {
